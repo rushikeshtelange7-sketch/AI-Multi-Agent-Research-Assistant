@@ -3,39 +3,38 @@ from fpdf import FPDF
 
 def create_pdf(topic, report):
 
-    pdf = FPDF()
+    file_name = f"{topic.replace(' ', '_')}_report.pdf"
 
+    pdf = FPDF()
     pdf.add_page()
 
-    pdf.set_font("Arial", size=14)
+    pdf.set_auto_page_break(auto=True, margin=15)
 
-    pdf.cell(
-        200,
-        10,
-        txt="AI-Powered Multi-Agent Research Report",
-        ln=True,
-        align="C"
-    )
-
-    pdf.ln(10)
-
-    pdf.set_font("Arial", size=12)
-
-    pdf.multi_cell(
-        0,
-        10,
-        txt=f"Topic:\n{topic}"
-    )
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(0, 10, topic, ln=True)
 
     pdf.ln(5)
 
-    pdf.multi_cell(
-        0,
-        10,
-        txt=report
+    pdf.set_font("Arial", size=12)
+
+    # Remove unsupported Unicode characters
+    clean_report = (
+        report.replace("•", "-")
+              .replace("–", "-")
+              .replace("—", "-")
+              .replace("“", '"')
+              .replace("”", '"')
+              .replace("'", "'")
+              .replace("'", "'")
     )
 
-    file_name = "research_report.pdf"
+    # Keep only latin-1 compatible characters
+    clean_report = clean_report.encode(
+        "latin-1",
+        "replace"
+    ).decode("latin-1")
+
+    pdf.multi_cell(0, 10, clean_report)
 
     pdf.output(file_name)
 
