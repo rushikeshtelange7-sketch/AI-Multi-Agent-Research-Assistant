@@ -1,0 +1,7 @@
+streamlit
+langchain
+langchain-ollama
+ollama
+ddgs
+fpdf
+requests
