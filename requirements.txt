@@ -5,3 +5,9 @@ ollama
 ddgs
 fpdf
 requests
+PyPDF2
+python-docx
+pandas
+streamlit-mic-recorder
+SpeechRecognition
+pyttsx3

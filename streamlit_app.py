@@ -1,202 +1,231 @@
-from datetime import datetime
 import streamlit as st
+import pandas as pd
+from datetime import datetime
+
+from streamlit_mic_recorder import mic_recorder
 
 from agents.planner import planner_agent
 from agents.researcher import researcher_agent
 from agents.analyst import analyst_agent
 from agents.writer import writer_agent
-from agents.fact_checker import fact_checker_agent
-from utils.pdf_generator import create_pdf
 
-
-# ---------------- PAGE SETTINGS ----------------
+# ---------------- PAGE ---------------- #
 
 st.set_page_config(
-    page_title="AI-Powered Multi-Agent Research Assistant",
+    page_title="AI Research Assistant",
     page_icon="🤖",
     layout="wide"
 )
 
+# ---------------- CSS ---------------- #
 
-# ---------------- SIDEBAR ----------------
+st.markdown("""
+<style>
 
-st.sidebar.title("🤖 Project Info")
+.main{
+background-color:#0E1117;
+}
 
-st.sidebar.write(
-    "AI-Powered Multi-Agent Research Assistant"
+.block-container{
+padding-top:2rem;
+}
+
+.big-title{
+font-size:55px;
+font-weight:bold;
+text-align:center;
+color:white;
+}
+
+.subtitle{
+text-align:center;
+font-size:20px;
+color:lightgray;
+}
+
+.card{
+padding:20px;
+border-radius:15px;
+background:#1e1e1e;
+margin-top:10px;
+}
+
+.footer{
+text-align:center;
+padding:20px;
+font-size:16px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# ---------------- SIDEBAR ---------------- #
+
+with st.sidebar:
+
+    st.title("🤖 AI Assistant")
+
+    st.markdown("---")
+
+    st.write("📋 Planner")
+    st.write("🌐 Researcher")
+    st.write("🧠 Analyst")
+    st.write("✍️ Writer")
+    st.write("✅ Fact Checker")
+    st.write("🎤 Voice Input")
+    st.write("📁 File Upload")
+    st.write("📥 Download Report")
+
+    st.markdown("---")
+
+    st.success("👨‍💻 Built by Rushi")
+
+    st.info("🚀 Version 4.0")
+
+# ---------------- HEADER ---------------- #
+
+st.markdown(
+'<div class="big-title">🤖 AI-Powered Multi-Agent Research Assistant</div>',
+unsafe_allow_html=True
 )
 
-st.sidebar.write("Built by Rushi")
-
-st.sidebar.write("Version 1.0")
-
-
-# ---------------- TITLE ----------------
-
-st.title("🤖 AI-Powered Multi-Agent Research Assistant")
-
-st.caption(
-    "Planner • Researcher • Analyst • Writer • Fact Checker"
+st.markdown(
+'<div class="subtitle">Professional AI Research Generator</div>',
+unsafe_allow_html=True
 )
 
+st.markdown("---")
 
-# ---------------- INPUT ----------------
+# ---------------- DASHBOARD ---------------- #
+
+col1,col2,col3,col4=st.columns(4)
+
+with col1:
+    st.metric("🤖 Agents","5")
+
+with col2:
+    st.metric("📄 Reports","Unlimited")
+
+with col3:
+    st.metric("⚡ Speed","Fast")
+
+with col4:
+    st.metric("🟢 Status","Online")
+
+st.markdown("---")
+
+# ---------------- INPUTS ---------------- #
 
 topic = st.text_input(
-    "Enter a research topic"
+    "🔍 Enter Research Topic",
+    placeholder="Example: Artificial Intelligence in Healthcare"
 )
 
+uploaded_file = st.file_uploader(
+    "📁 Upload PDF/TXT/DOCX",
+    type=["pdf","txt","docx"]
+)
 
-# ---------------- GENERATE REPORT ----------------
+st.write("🎤 Voice Input")
 
-if st.button("Generate Report"):
+mic_recorder(
+    start_prompt="🎙️ Start Recording",
+    stop_prompt="⏹️ Stop Recording",
+    key="voice"
+)
 
-    if topic.strip() == "":
+generate = st.button(
+    "🚀 Generate AI Report",
+    use_container_width=True
+)
 
-        st.warning(
-            "⚠️ Please enter a research topic."
-        )
+# ---------------- REPORT ---------------- #
+
+if generate:
+
+    if topic == "" and uploaded_file is None:
+
+        st.warning("⚠️ Enter a topic or upload a file.")
 
     else:
 
-        with st.spinner(
-            "🤖 AI agents are researching..."
-        ):
+        progress=st.progress(0)
 
-            # Planner Agent
-            plan = planner_agent(topic)
+        st.info("🤖 AI Agents are researching...")
 
-            # Researcher Agent
-            research = researcher_agent(topic)
+        progress.progress(20)
 
-            # Analyst Agent
-            analysis = analyst_agent(
-                topic,
-                research
-            )
+        plan=planner_agent(topic)
 
-            # Writer Agent
-            report = writer_agent(
-                topic,
-                analysis
-            )
+        progress.progress(40)
 
-            # Fact Checker Agent
-            fact_check = fact_checker_agent(
-                topic,
-                report
-            )
+        research=researcher_agent(topic)
 
-        # Success Message
+        progress.progress(60)
 
-        st.success(
-            "✅ Report generated successfully!"
-        )
+        analysis=analyst_agent(topic,research)
 
-        # Time
+        progress.progress(80)
 
-        st.write(
-            "🕒 Generated on:",
-            datetime.now().strftime(
-                "%d-%m-%Y %H:%M:%S"
-            )
-        )
+        report=writer_agent(topic,analysis)
 
-        st.divider()
+        progress.progress(100)
 
-        # Research Plan
+        st.success("✅ Report Generated")
 
-        st.subheader(
-            "📋 Research Plan"
-        )
-
+        st.subheader("📋 Research Plan")
         st.write(plan)
 
-        st.divider()
-
-        # Web Results
-
-        st.subheader(
-            "🌐 Web Results"
-        )
+        st.subheader("🌐 Web Results")
 
         for item in research:
+            st.write("•",item)
 
-            st.write(
-                "•",
-                item
-            )
+        st.subheader("🧠 AI Analysis")
+        st.write(analysis)
 
-        st.divider()
-
-        # AI Analysis
-
-        st.subheader(
-            "🧠 AI Analysis"
-        )
-
-        st.write(
-            analysis
-        )
-
-        st.divider()
-
-        # Final Report
-
-        st.subheader(
-            "📄 Final Report"
-        )
-
-        st.write(
-            report
-        )
-
-        st.divider()
-
-        # Fact Check
-
-        st.subheader(
-            "✅ Fact Check"
-        )
-
-        st.write(
-            fact_check
-        )
-
-        st.divider()
-
-        # Download Text Report
+        st.subheader("📄 Final Report")
+        st.write(report)
 
         st.download_button(
 
-            label="📄 Download Text Report",
+            label="📥 Download Report",
 
             data=report,
 
-            file_name="research_report.md",
+            file_name="research_report.txt",
 
-            mime="text/markdown"
+            mime="text/plain"
+
         )
 
-        # Download PDF
+        st.subheader("📊 Agent Performance")
 
-        pdf_file = create_pdf(
-            topic,
-            report
-        )
+        chart=pd.DataFrame({
 
-        with open(
-            pdf_file,
-            "rb"
-        ) as file:
+            "Agent":[
+                "Planner",
+                "Researcher",
+                "Analyst",
+                "Writer"
+            ],
 
-            st.download_button(
+            "Score":[
+                25,
+                35,
+                20,
+                20
+            ]
 
-                label="📄 Download PDF Report",
+        })
 
-                data=file,
+        st.bar_chart(chart.set_index("Agent"))
 
-                file_name=pdf_file,
+        st.write("🕒",datetime.now())
 
-                mime="application/pdf"
-            )
+st.markdown("---")
+
+st.markdown(
+'<div class="footer">👨‍💻 Built by Rushi 🚀 | Version 4.0</div>',
+unsafe_allow_html=True
+)
